@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
-import models from "../../modelData/models";
+import fetchModel from "../../lib/fetchModelData";
 
 import "./styles.css";
 
@@ -10,23 +10,36 @@ function TopBar() {
   const [contextText, setContextText] = useState("");
 
   useEffect(() => {
-    const pathParts = location.pathname.split("/");
-    const userId = pathParts[pathParts.length - 1];
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    let userId = null;
+    let contextType = "list";
 
-    if (pathParts.includes("photos")) {
-      const user = models.userModel(userId);
-      if (user) {
-        setContextText(`Photos of ${user.first_name} ${user.last_name}`);
-      } else {
-        setContextText("");
-      }
-    } else if (pathParts.includes("users")) {
-      const user = models.userModel(userId);
-      if (user) {
-        setContextText(`${user.first_name} ${user.last_name}`);
-      } else {
-        setContextText("");
-      }
+    if (pathParts[0] === "photos" && pathParts[1]) {
+      userId = pathParts[1];
+      contextType = "photos";
+    } else if (pathParts[0] === "users" && pathParts[1]) {
+      userId = pathParts[1];
+      contextType = "user";
+    }
+
+    if (userId) {
+      fetchModel(`http://localhost:8081/user/${userId}`)
+        .then((user) => {
+          if (user && user.first_name && user.last_name) {
+            if (contextType === "photos") {
+              setContextText(`Photos of ${user.first_name} ${user.last_name}`);
+            } else if (contextType === "user") {
+              setContextText(`${user.first_name} ${user.last_name}`);
+            }
+          } else {
+            setContextText(
+              contextType === "photos" ? "Photos" : "User Detail"
+            );
+          }
+        })
+        .catch(() =>
+          setContextText(contextType === "photos" ? "Photos" : "User Detail")
+        );
     } else {
       setContextText("User List");
     }

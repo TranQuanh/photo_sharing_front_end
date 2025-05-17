@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Card, CardContent, CardMedia, Link } from "@mui/material";
 import { Link as RouterLink, useParams } from "react-router-dom";
-import models from "../../modelData/models";
+import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
 
 function UserPhotos() {
   const { userId } = useParams();
-  const user = models.userModel(userId);
-  const photos = models.photoOfUserModel(userId);
+  const [user, setUser] = useState(null);
+  const [photos, setPhotos] = useState(null);
+
+  useEffect(() => {
+    fetchModel(`http://localhost:8081/user/${userId}`)
+      .then(setUser)
+      .catch(() => setUser(null));
+    fetchModel(`http://localhost:8081/photosOfUser/${userId}`)
+      .then(setPhotos)
+      .catch(() => setPhotos(null));
+  }, [userId]);
 
   if (!user || !photos) {
     return <Typography variant="h4">Photos not found</Typography>;

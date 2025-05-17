@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Card, CardContent, Button } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
-import models from "../../modelData/models";
+import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
 
 function UserDetail() {
   const { userId } = useParams();
-  const user = models.userModel(userId);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetchModel(`http://localhost:8081/user/${userId}`)
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, [userId]);
 
   if (!user) {
     return <Typography variant="h4">User not found</Typography>;

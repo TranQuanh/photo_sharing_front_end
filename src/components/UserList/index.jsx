@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Divider,
   List,
@@ -8,10 +8,16 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import "./styles.css";
-import models from "../../modelData/models";
+import fetchModel from "../../lib/fetchModelData";
 
 function UserList() {
-  const users = models.userListModel();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchModel("http://localhost:8081/user/list")
+      .then(setUsers)
+      .catch(() => setUsers([]));
+  }, []);
 
   return (
     <div className="user-list">
@@ -21,8 +27,8 @@ function UserList() {
             <ListItem disablePadding className="user-list-item">
               <ListItemButton component={Link} to={`/users/${user._id}`}>
                 <ListItemText
-                  primary={`${user.first_name} ${user.last_name}`}
-                  secondary={user.occupation}
+                  primary={`${user.first_name ?? ""} ${user.last_name ?? ""}`}
+                  secondary={user.first_name ? user.first_name : null}
                 />
               </ListItemButton>
             </ListItem>
